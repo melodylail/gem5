@@ -1,7 +1,8 @@
 /* profiling/workload/workload.c
  * Synthetic SPEC-style compute kernel for gem5 SE mode profiling.
- * 4 phases: FP matrix multiply, integer hash, branch-heavy sort, memory streaming.
- * Target: ~200M-500M instructions, ~10-30s wall clock in gem5 SE mode.
+ * 4 phases: FP matrix multiply, integer hash, branch-heavy sort, memory
+ * streaming. Target: ~200M-500M instructions, ~10-30s wall clock in gem5 SE
+ * mode.
  *
  * Compile: gcc -O2 -static -o workload workload.c -lm
  */
@@ -15,7 +16,7 @@
 #define N 256
 #define HASH_ITERS 200000
 #define SORT_SIZE 10000
-#define STREAM_SIZE (32 * 1024 * 1024)  /* 32 MiB */
+#define STREAM_SIZE (32 * 1024 * 1024) /* 32 MiB */
 
 /* --- Phase 1: Matrix Multiply (FMA, cache pressure) --- */
 static void
@@ -78,17 +79,16 @@ phase2_hash_compute(void)
         }
 
         for (int round = 0; round < 64; round++) {
-            uint32_t s1 = rotl32(state[4], 6) ^ rotl32(state[4], 11)
-                          ^ rotl32(state[4], 25);
+            uint32_t s1 = rotl32(state[4], 6) ^ rotl32(state[4], 11) ^
+                          rotl32(state[4], 25);
             uint32_t ch = (state[4] & state[5]) ^ (~state[4] & state[6]);
-            uint32_t temp1 = state[7] + s1 + ch
-                             + data[round % 16] + round * 0x428a2f98;
+            uint32_t temp1 =
+                state[7] + s1 + ch + data[round % 16] + round * 0x428a2f98;
 
-            uint32_t s0 = rotl32(state[0], 2) ^ rotl32(state[0], 13)
-                          ^ rotl32(state[0], 22);
-            uint32_t maj = (state[0] & state[1])
-                           ^ (state[0] & state[2])
-                           ^ (state[1] & state[2]);
+            uint32_t s0 = rotl32(state[0], 2) ^ rotl32(state[0], 13) ^
+                          rotl32(state[0], 22);
+            uint32_t maj = (state[0] & state[1]) ^ (state[0] & state[2]) ^
+                           (state[1] & state[2]);
             uint32_t temp2 = s0 + maj;
 
             state[7] = state[6];
@@ -102,8 +102,8 @@ phase2_hash_compute(void)
         }
     }
 
-    printf("  phase2: hash %d iters final state[0]=0x%08x\n",
-           HASH_ITERS, state[0]);
+    printf("  phase2: hash %d iters final state[0]=0x%08x\n", HASH_ITERS,
+           state[0]);
 }
 
 /* --- Phase 3: Branch-heavy sort (branch predictor stress) --- */
@@ -170,8 +170,8 @@ phase4_memory_stream(void)
     for (size_t i = 0; i < size; i++) {
         checksum += (unsigned char)dst[i];
     }
-    printf("  phase4: stream %zu MiB checksum=%zu\n",
-           size / (1024 * 1024), checksum);
+    printf("  phase4: stream %zu MiB checksum=%zu\n", size / (1024 * 1024),
+           checksum);
 
     free(src);
     free(dst);
