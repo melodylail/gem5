@@ -1,0 +1,26 @@
+# profiling/mem/mem_thresholds.yaml
+# Default policy. All thresholds are unset (commented) — the default gate is
+# "no thresholds → pass". Uncomment and set values to enable gating.
+# Per-workload policies go under profiling/mem/policies/<workload>.yaml.
+
+# warmup_seconds: 30
+#   Seconds from run start to exclude from leak detection (startup ramp).
+#
+# peak_rss_mb: 8192
+#   Fail if peak RSS exceeds this value (megabytes).
+#
+# leak_bytes_per_sec: 524288
+#   Fail if post-warmup RSS growth rate exceeds this (bytes/second).
+#
+# rss_per_msim_inst_kb: null
+#   RSS cost per million simulated instructions. null = compute but don't gate.
+#
+# require_stats_txt: false
+#   If true, fail when stats.txt is absent/unparseable.
+#
+# min_regression_samples: 5
+#   Minimum post-warmup samples needed to compute growth_rate.
+#
+# fail_mode: summary
+#   'summary' = evaluate all thresholds before reporting.
+#   'fast'    = stop at first breach.
