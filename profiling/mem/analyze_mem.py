@@ -228,6 +228,66 @@ def load_stats(path: Path) -> Optional[Dict[str, float]]:
     return result if result else None
 
 
+def compute_metrics(
+    samples: list,
+    stats: Optional[Dict[str, float]],
+    cfg: Dict[str, Tuple[Any, str]],
+) -> Dict[str, Any]:
+    """Compute memory trend metrics from samples and optional stats."""
+    warmup_s = cfg.get("warmup_seconds", (30, "default"))[0]
+    min_samp = cfg.get("min_regression_samples", (5, "default"))[0]
+
+    peak_rss = max(s["rss_kb"] for s in samples) if samples else 0.0
+    peak_pss = max(s["pss_kb"] for s in samples) if samples else 0.0
+    final_rss = samples[-1]["rss_kb"] if samples else 0.0
+    baseline = samples[0]["rss_kb"] if samples else 0.0
+
+    post = [s for s in samples if s["ts_ms"] >= warmup_s * 1000.0]
+    growth_rate = None
+    growth_reason = None
+    if len(post) >= min_samp:
+        xv = [s["ts_ms"] / 1000.0 for s in post]
+        yv = [s["rss_kb"] for s in post]
+        growth_rate, _ = _linear_regression(xv, yv)
+    elif len(post) > 0:
+        growth_reason = "insufficient_samples"
+    else:
+        growth_reason = "insufficient_samples"
+
+    rss_per_msim = None
+    if stats and stats.get("sim_insts", 0) > 0:
+        rss_per_msim = (peak_rss - baseline) / (
+            stats["sim_insts"] / 1_000_000.0
+        )
+
+    return {
+        "peak_rss_kb": peak_rss,
+        "peak_pss_kb": peak_pss,
+        "final_rss_kb": final_rss,
+        "warmup_end_s": warmup_s,
+        "growth_rate_kb_per_s_post_warmup": growth_rate,
+        "growth_rate_reason": growth_reason,
+        "rss_per_msim_inst_kb": rss_per_msim,
+        "n_samples": len(samples),
+        "n_post_warmup": len(post),
+    }
+
+
+def _linear_regression(x: list, y: list) -> Tuple[float, float]:
+    """Simple OLS: returns (slope, intercept)."""
+    n = len(x)
+    if n < 2:
+        return 0.0, y[0] if n == 1 else 0.0
+    sx, sy = sum(x), sum(y)
+    sxx = sum(xi * xi for xi in x)
+    sxy = sum(xi * yi for xi, yi in zip(x, y))
+    denom = n * sxx - sx * sx
+    if abs(denom) < 1e-15:
+        return 0.0, sy / n
+    slope = (n * sxy - sx * sy) / denom
+    return slope, (sy - slope * sx) / n
+
+
 def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
     if yaml_path is None or not yaml_path.is_file():
         return None
