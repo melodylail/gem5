@@ -183,6 +183,51 @@ def _parse_host_line(value: str, header: Dict[str, Any]) -> None:
             header["page_size"] = int(v)
 
 
+_STAT_ALIASES = {
+    "sim_insts": ["sim_insts", "simInsts"],
+    "host_seconds": ["host_seconds", "hostSeconds"],
+    "sim_seconds": ["sim_seconds", "simSeconds"],
+}
+
+
+def load_stats(path: Path) -> Optional[Dict[str, float]]:
+    """Parse gem5 stats.txt. Multi-dump: last block wins."""
+    if not path.is_file():
+        warnings.warn(f"stats.txt not found: {path}")
+        return None
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except Exception:
+        warnings.warn(f"cannot read stats.txt: {path}")
+        return None
+    if "Begin Simulation Statistics" not in text:
+        warnings.warn(f"no stats block in {path}")
+        return None
+    blocks = text.split("---------- Begin Simulation Statistics ----------")
+    result = {}
+    for block in blocks:
+        for line in block.splitlines():
+            line = line.strip()
+            if not line or line.startswith("---"):
+                continue
+            for norm, aliases in _STAT_ALIASES.items():
+                for alias in aliases:
+                    if line.startswith(alias + " ") or line.startswith(
+                        alias + "\t"
+                    ):
+                        parts = line.split()
+                        for p in parts[1:]:
+                            if p.startswith("#"):
+                                break
+                            try:
+                                result[norm] = float(p)
+                            except ValueError:
+                                pass
+                            break
+                        break
+    return result if result else None
+
+
 def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
     if yaml_path is None or not yaml_path.is_file():
         return None

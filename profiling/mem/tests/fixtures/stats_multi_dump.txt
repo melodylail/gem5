@@ -1,0 +1,10 @@
+---------- Begin Simulation Statistics ----------
+simInsts                       500000000
+simSeconds                     0.000300
+hostSeconds                    15.000000
+---------- End Simulation Statistics ----------
+---------- Begin Simulation Statistics ----------
+simInsts                      1500000000
+simSeconds                     0.001000
+hostSeconds                    45.234000
+---------- End Simulation Statistics ----------

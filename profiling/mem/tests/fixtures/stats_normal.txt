@@ -1,0 +1,5 @@
+---------- Begin Simulation Statistics ----------
+sim_insts                     1500000000                       # Number of instructions simulated
+sim_seconds                      0.001000                       # Number of seconds simulated
+host_seconds                    45.234000                       # Real time elapsed on the host
+---------- End Simulation Statistics ----------
