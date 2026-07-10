@@ -1,0 +1,14 @@
+# gem5_cmd: build/ALL/gem5.opt configs/se_profile.py --binary workload
+# start_wall: 2026-07-09T14:03:11+08:00
+# interval_s: 1.0
+# pid: 48214
+# host: testhost, kernel: 6.8.0-test, page_size: 4096
+# tag: appended-run
+# attached: true
+ts_ms,rss_kb,pss_kb,uss_kb,heap_kb,anon_kb,file_kb,swap_kb,gem5_phase
+0,40000,39500,39000,10000,30000,10000,0,unknown
+1000,41000,40400,39900,11000,30000,10000,0,unknown
+2000,42000,41300,40800,12000,30000,10000,0,unknown
+# segment_start: 2026-07-09T14:05:00+08:00
+3000,42000,41300,40800,12000,30000,10000,0,unknown
+4000,43000,42300,41800,13000,30000,10000,0,unknown

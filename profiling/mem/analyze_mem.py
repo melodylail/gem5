@@ -79,6 +79,110 @@ def resolve_config(
     return result
 
 
+_DATA_COLUMNS = [
+    "ts_ms",
+    "rss_kb",
+    "pss_kb",
+    "uss_kb",
+    "heap_kb",
+    "anon_kb",
+    "file_kb",
+    "swap_kb",
+    "gem5_phase",
+]
+_NUMERIC_COLS = frozenset(_DATA_COLUMNS[:-1])
+
+
+def load_csv(path: Path) -> Tuple[Dict[str, Any], list]:
+    """Parse memory trend CSV. Returns (header_dict, samples_list)."""
+    if not path.is_file():
+        raise FileNotFoundError(f"CSV not found: {path}")
+
+    header: Dict[str, Any] = {
+        "gem5_cmd": "",
+        "start_wall": "",
+        "interval_s": 1.0,
+        "pid": 0,
+        "host": "",
+        "kernel": "",
+        "page_size": 4096,
+        "tag": "",
+        "attached": False,
+        "smaps_rollup_unavailable": False,
+        "segments": [],
+    }
+    samples: list = []
+    expected = len(_DATA_COLUMNS)
+
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.rstrip("\n\r")
+            if line.startswith("#"):
+                content = line[1:].strip()
+                if content.startswith("segment_start:"):
+                    header["segments"].append(content.split(":", 1)[1].strip())
+                elif ":" in content:
+                    k, _, v = content.partition(":")
+                    k, v = k.strip().lower(), v.strip()
+                    if k == "gem5_cmd":
+                        header["gem5_cmd"] = v
+                    elif k == "start_wall":
+                        header["start_wall"] = v
+                    elif k == "interval_s":
+                        header["interval_s"] = float(v)
+                    elif k == "pid":
+                        header["pid"] = int(v)
+                    elif k == "host":
+                        _parse_host_line(v, header)
+                    elif k == "tag":
+                        header["tag"] = v
+                    elif k == "attached":
+                        header["attached"] = v.lower() in ("true", "1", "yes")
+                    elif k == "smaps_rollup_unavailable":
+                        header["smaps_rollup_unavailable"] = v.lower() in (
+                            "true",
+                            "1",
+                            "yes",
+                        )
+                continue
+            if not line.strip():
+                continue
+            fields = line.split(",")
+            if fields[0].strip() == "ts_ms":
+                continue
+            if len(fields) != expected:
+                warnings.warn(
+                    f"skipping malformed row: expected {expected} cols, got {len(fields)}"
+                )
+                continue
+            sample = {}
+            for i, col in enumerate(_DATA_COLUMNS):
+                val = fields[i].strip()
+                if col in _NUMERIC_COLS:
+                    sample[col] = float(val) if val else 0.0
+                else:
+                    sample[col] = val
+            samples.append(sample)
+    return header, samples
+
+
+def _parse_host_line(value: str, header: Dict[str, Any]) -> None:
+    parts = [p.strip() for p in value.split(",")]
+    if parts and ":" not in parts[0]:
+        header["host"] = parts[0]
+    for part in parts:
+        if ":" not in part:
+            continue
+        k, _, v = part.partition(":")
+        k, v = k.strip().lower(), v.strip()
+        if k in ("host", "hostname"):
+            header["host"] = v
+        elif k == "kernel":
+            header["kernel"] = v
+        elif k == "page_size":
+            header["page_size"] = int(v)
+
+
 def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
     if yaml_path is None or not yaml_path.is_file():
         return None

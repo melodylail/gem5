@@ -1,0 +1,11 @@
+# gem5_cmd: test
+# start_wall: 2026-07-09T14:03:11+08:00
+# interval_s: 1.0
+# pid: 1
+# host: testhost, kernel: 6.8.0-test, page_size: 4096
+# tag: malformed
+# attached: false
+ts_ms,rss_kb,pss_kb,uss_kb,heap_kb,anon_kb,file_kb,swap_kb,gem5_phase
+0,1000,990,980,100,900,100,0,unknown
+1000,2000,1990,1980
+2000,3000,2990,2980,300,2700,300,0,unknown
