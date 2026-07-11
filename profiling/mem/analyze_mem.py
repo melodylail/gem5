@@ -330,14 +330,14 @@ def evaluate_gate(
     checks = [
         (
             "peak_rss_mb",
-            metrics.get("peak_rss_kb", 0),
+            metrics.get("peak_rss_kb"),
             "peak_rss_mb",
             1.0 / 1024.0,
             "peak_rss_mb",
         ),
         (
             "leak_bytes_per_sec",
-            metrics.get("growth_rate_kb_per_s_post_warmup", 0),
+            metrics.get("growth_rate_kb_per_s_post_warmup"),
             "leak_bytes_per_sec",
             1024.0,
             "leak_bytes_per_sec",

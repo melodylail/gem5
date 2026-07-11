@@ -110,3 +110,11 @@ def test_require_stats_present():
     c = _cfg(require_stats_txt=(True, "c"))
     v, code, _ = evaluate_gate({}, c, True)
     assert code == 0
+
+
+def test_rss_per_msim_breached():
+    m = {"rss_per_msim_inst_kb": 50.0}
+    c = _cfg(rss_per_msim_inst_kb=(10.0, "c"))
+    v, code, fails = evaluate_gate(m, c, True)
+    assert code == 1
+    assert any("rss_per_msim" in f["metric"] for f in fails)
