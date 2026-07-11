@@ -288,6 +288,81 @@ def _linear_regression(x: list, y: list) -> Tuple[float, float]:
     return slope, (sy - slope * sx) / n
 
 
+def evaluate_gate(
+    metrics: dict,
+    cfg: Dict[str, Tuple[Any, str]],
+    stats_present: bool,
+) -> Tuple[str, int, list]:
+    """Evaluate all configured thresholds. Returns (verdict, exit_code, failures)."""
+    if cfg.get("require_stats_txt", (False, "d"))[0] and not stats_present:
+        return (
+            "fail",
+            1,
+            [
+                {
+                    "metric": "stats.txt",
+                    "reason": "stats.txt required but absent",
+                }
+            ],
+        )
+
+    fail_mode = cfg.get("fail_mode", ("summary", "d"))[0]
+    failures = []
+
+    def _check(
+        metric_key, current, threshold_cfg_key, unit_conv=1.0, label=None
+    ):
+        thr = cfg.get(threshold_cfg_key, (None, "d"))[0]
+        if thr is None or current is None:
+            return False
+        if current * unit_conv > thr:
+            failures.append(
+                {
+                    "metric": label or metric_key,
+                    "current": current,
+                    "threshold": thr,
+                    "unit": metric_key,
+                }
+            )
+            return True
+        return False
+
+    checks = [
+        (
+            "peak_rss_mb",
+            metrics.get("peak_rss_kb", 0),
+            "peak_rss_mb",
+            1.0 / 1024.0,
+            "peak_rss_mb",
+        ),
+        (
+            "leak_bytes_per_sec",
+            metrics.get("growth_rate_kb_per_s_post_warmup", 0),
+            "leak_bytes_per_sec",
+            1024.0,
+            "leak_bytes_per_sec",
+        ),
+        (
+            "rss_per_msim_inst_kb",
+            metrics.get("rss_per_msim_inst_kb"),
+            "rss_per_msim_inst_kb",
+            1.0,
+            "rss_per_msim_inst_kb",
+        ),
+    ]
+
+    for metric_key, current, threshold_cfg_key, unit_conv, label in checks:
+        breached = _check(
+            metric_key, current, threshold_cfg_key, unit_conv, label
+        )
+        if breached and fail_mode == "fast":
+            break
+
+    if failures:
+        return ("fail", 1, failures)
+    return ("pass", 0, [])
+
+
 def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
     if yaml_path is None or not yaml_path.is_file():
         return None
