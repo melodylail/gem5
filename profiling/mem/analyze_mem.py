@@ -363,6 +363,175 @@ def evaluate_gate(
     return ("pass", 0, [])
 
 
+def render_plot(samples, metrics, cfg, out_path):
+    """Render RSS+PSS+heap over time to out_path. Returns Path or None."""
+    try:
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError:
+        warnings.warn("matplotlib not available; skipping plot")
+        return None
+
+    ts = [s["ts_ms"] / 1000.0 for s in samples]
+    rss = [s["rss_kb"] / 1024.0 for s in samples]
+    pss = (
+        [s["pss_kb"] / 1024.0 for s in samples]
+        if any(s.get("pss_kb", -1) >= 0 for s in samples)
+        else None
+    )
+    heap = (
+        [s["heap_kb"] / 1024.0 for s in samples]
+        if any(s.get("heap_kb", -1) >= 0 for s in samples)
+        else None
+    )
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(ts, rss, label="RSS", linewidth=1.5)
+    if pss:
+        ax.plot(ts, pss, label="PSS", linewidth=1.0, alpha=0.7)
+    if heap:
+        ax.plot(ts, heap, label="Heap", linewidth=1.0, alpha=0.7)
+
+    warmup = metrics.get("warmup_end_s", 0)
+    if warmup > 0:
+        ax.axvspan(
+            0, warmup, alpha=0.1, color="gray", label=f"Warmup ({warmup}s)"
+        )
+
+    peak_rss_mb = cfg.get("peak_rss_mb", (None,))[0]
+    if peak_rss_mb:
+        ax.axhline(
+            y=peak_rss_mb,
+            color="red",
+            linestyle="--",
+            alpha=0.5,
+            label=f"Peak limit ({peak_rss_mb} MB)",
+        )
+
+    ax.set_xlabel("Wall time (s)")
+    ax.set_ylabel("Memory (MB)")
+    ax.set_title("gem5.opt Memory Trend")
+    ax.legend(fontsize="small")
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(out_path, dpi=100)
+    plt.close(fig)
+    return out_path
+
+
+def write_report(
+    header,
+    samples,
+    metrics,
+    cfg,
+    verdict,
+    failures,
+    heaptrack_summary,
+    out_path,
+):
+    """Write markdown report to out_path."""
+    lines = []
+    lines.append("# gem5 Memory Trend Report")
+    lines.append("")
+    lines.append(
+        f"**Verdict:** {verdict.upper()} "
+        f"(exit {1 if verdict == 'fail' else 0})"
+    )
+    lines.append(f"**Tag:** {header.get('tag', '')}")
+    lines.append(f"**Start:** {header.get('start_wall', '')}")
+    lines.append(f"**PID:** {header.get('pid', '')}")
+    lines.append("")
+
+    # Effective configuration
+    lines.append("## Effective configuration")
+    lines.append("")
+    lines.append("| Key | Value | Source |")
+    lines.append("|-----|-------|--------|")
+    for key in sorted(cfg):
+        val, src = cfg[key]
+        lines.append(f"| {key} | {val} | {src} |")
+    lines.append("")
+
+    # Metrics
+    lines.append("## Metrics")
+    lines.append("")
+    lines.append(
+        f"- **Peak RSS:** {metrics.get('peak_rss_kb', 0)/1024:.1f} MB"
+    )
+    lines.append(
+        f"- **Peak PSS:** {metrics.get('peak_pss_kb', 0)/1024:.1f} MB"
+    )
+    lines.append(
+        f"- **Final RSS:** {metrics.get('final_rss_kb', 0)/1024:.1f} MB"
+    )
+    gr = metrics.get("growth_rate_kb_per_s_post_warmup")
+    if gr is not None:
+        lines.append(f"- **Growth rate (post-warmup):** {gr:.2f} KB/s")
+        lines.append(
+            f"- **Growth rate:** {gr * 1024:.0f} B/s "
+            f"({gr * 1024 / 1048576:.2f} MB/s)"
+        )
+    else:
+        lines.append(
+            f"- **Growth rate:** N/A "
+            f"({metrics.get('growth_rate_reason', '')})"
+        )
+    rpm = metrics.get("rss_per_msim_inst_kb")
+    if rpm is not None:
+        lines.append(f"- **RSS per M-simInsts:** {rpm:.2f} KB")
+    lines.append(
+        f"- **Samples:** {metrics.get('n_samples', 0)} total, "
+        f"{metrics.get('n_post_warmup', 0)} post-warmup"
+    )
+    lines.append("")
+
+    # Failures
+    if failures:
+        lines.append("## Threshold Failures")
+        lines.append("")
+        for f in failures:
+            lines.append(
+                f"- **{f['metric']}**: "
+                f"{f.get('current', 'N/A')} > "
+                f"{f.get('threshold', 'N/A')}"
+            )
+        lines.append("")
+
+    # Heaptrack
+    if heaptrack_summary:
+        lines.append("## Heaptrack Summary")
+        lines.append("")
+        lines.append(heaptrack_summary)
+        lines.append("")
+
+    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return out_path
+
+
+def write_metrics_json(header, metrics, cfg, verdict, failures, out_path):
+    """Write machine-readable metrics + config to JSON."""
+    import json
+
+    data = {k: v for k, v in metrics.items() if not k.startswith("_")}
+    data["tag"] = header.get("tag", "")
+    data["start_wall"] = header.get("start_wall", "")
+    data["pid"] = header.get("pid", 0)
+    data["effective_config"] = {
+        k: {"value": v[0], "source": v[1]} for k, v in cfg.items()
+    }
+    data["gate"] = {
+        "verdict": verdict,
+        "exit_code": 1 if verdict == "fail" else 0,
+        "failures": failures,
+    }
+    out_path.write_text(
+        json.dumps(data, indent=2, default=str) + "\n", encoding="utf-8"
+    )
+    return out_path
+
+
 def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
     if yaml_path is None or not yaml_path.is_file():
         return None

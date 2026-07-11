@@ -1,0 +1,5 @@
+---
+warmup_seconds: 30
+peak_rss_mb: 100
+leak_bytes_per_sec: 100
+fail_mode: summary
