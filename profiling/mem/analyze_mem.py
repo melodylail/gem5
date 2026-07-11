@@ -552,7 +552,7 @@ def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
     return data.get(key)
 
 
-def main(argv=None):
+def main(argv=None) -> int:
     """Entry point: parse args, load data, compute, report, gate."""
     import argparse
 
@@ -756,13 +756,16 @@ def main(argv=None):
     return exit_code
 
 
-def _summarize_heaptrack(glob_pattern):
+def _summarize_heaptrack(glob_pattern: str) -> Optional[str]:
     """Return top-10 allocators from heaptrack print output, or None."""
     import glob as glob_mod
 
     files = glob_mod.glob(glob_pattern)
     if not files:
-        warnings.warn(f"no heaptrack files matching: {glob_pattern}")
+        print(
+            f"WARNING: no heaptrack files matching: {glob_pattern}",
+            file=sys.stderr,
+        )
         return None
     lines = []
     for fp in files:
@@ -770,8 +773,8 @@ def _summarize_heaptrack(glob_pattern):
             lines.append(
                 Path(fp).read_text(encoding="utf-8", errors="replace")
             )
-        except Exception:
-            pass
+        except Exception as exc:
+            warnings.warn(f"could not read heaptrack file {fp}: {exc}")
     return "\n".join(lines[:200]) if lines else None
 
 
