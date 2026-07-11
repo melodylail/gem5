@@ -550,3 +550,230 @@ def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
         if k not in _ENV_MAP:
             warnings.warn(f"unknown key '{k}' in policy YAML; ignored")
     return data.get(key)
+
+
+def main(argv=None):
+    """Entry point: parse args, load data, compute, report, gate."""
+    import argparse
+
+    p = argparse.ArgumentParser(
+        description="gem5 memory trend analyzer",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # Paths
+    pa = p.add_argument_group("paths")
+    pa.add_argument(
+        "--csv",
+        default=os.environ.get("MEM_TREND_CSV", "./output/mem_trend.csv"),
+        help="Input CSV [env: MEM_TREND_CSV]",
+    )
+    pa.add_argument(
+        "--stats",
+        default=os.environ.get("GEM5_STATS_TXT", ""),
+        help="gem5 stats.txt [env: GEM5_STATS_TXT]",
+    )
+    pa.add_argument(
+        "--policy",
+        default=os.environ.get("MEM_POLICY_YAML", ""),
+        help="Threshold policy YAML [env: MEM_POLICY_YAML]",
+    )
+    pa.add_argument(
+        "--heaptrack",
+        default=os.environ.get("MEM_HEAPTRACK_GLOB", ""),
+        help="Heaptrack output glob [env: MEM_HEAPTRACK_GLOB]",
+    )
+    pa.add_argument(
+        "--report",
+        default=os.environ.get("MEM_REPORT_MD", ""),
+        help="Report output [env: MEM_REPORT_MD]",
+    )
+    pa.add_argument(
+        "--metrics",
+        default=os.environ.get("MEM_METRICS_JSON", ""),
+        help="Metrics JSON [env: MEM_METRICS_JSON]",
+    )
+    pa.add_argument(
+        "--plot",
+        default=os.environ.get("MEM_PLOT_PNG", ""),
+        help="Plot PNG [env: MEM_PLOT_PNG]",
+    )
+    pa.add_argument(
+        "--no-plot",
+        action="store_true",
+        default=os.environ.get("MEM_NO_PLOT", "0") == "1",
+        help="Disable plot [env: MEM_NO_PLOT=1]",
+    )
+    pa.add_argument(
+        "--tag",
+        default=os.environ.get("MEM_RUN_TAG", ""),
+        help="Run tag override [env: MEM_RUN_TAG]",
+    )
+
+    # Thresholds
+    ta = p.add_argument_group("thresholds & analysis")
+    ta.add_argument(
+        "--warmup-seconds",
+        type=int,
+        default=int(os.environ.get("MEM_WARMUP_SECONDS", "0")) or None,
+        help="Warmup window (s) [env: MEM_WARMUP_SECONDS]",
+    )
+    ta.add_argument(
+        "--peak-rss-mb",
+        type=float,
+        default=float(os.environ.get("MEM_PEAK_RSS_MB", "0")) or None,
+        help="Peak RSS limit (MB) [env: MEM_PEAK_RSS_MB]",
+    )
+    ta.add_argument(
+        "--leak-bytes-per-sec",
+        type=float,
+        default=float(os.environ.get("MEM_LEAK_BPS", "0")) or None,
+        help="Leak rate limit (B/s) [env: MEM_LEAK_BPS]",
+    )
+    ta.add_argument(
+        "--rss-per-msim-kb",
+        type=float,
+        default=float(os.environ.get("MEM_RSS_PER_MSIM_KB", "0")) or None,
+        help="RSS per M-simInst limit (KB) [env: MEM_RSS_PER_MSIM_KB]",
+    )
+    ta.add_argument(
+        "--require-stats-txt",
+        action="store_true",
+        default=os.environ.get("MEM_REQUIRE_STATS_TXT", "0") == "1",
+        help="Fail if stats.txt absent [env: MEM_REQUIRE_STATS_TXT]",
+    )
+    ta.add_argument(
+        "--min-regression-samples",
+        type=int,
+        default=int(os.environ.get("MEM_MIN_REGRESSION_SAMPLES", "0")) or None,
+        help="Min post-warmup samples [env: MEM_MIN_REGRESSION_SAMPLES]",
+    )
+    ta.add_argument(
+        "--fail-fast",
+        action="store_true",
+        default=os.environ.get("MEM_FAIL_MODE", "summary") == "fast",
+        help="Stop at first breach [env: MEM_FAIL_MODE=fast]",
+    )
+
+    args = p.parse_args(argv)
+
+    # Resolve paths
+    csv_path = Path(args.csv)
+    if not csv_path.is_file():
+        print(f"ERROR: mem_trend.csv not found: {csv_path}", file=sys.stderr)
+        return 2
+
+    csv_dir = csv_path.parent
+    stats_path = Path(args.stats) if args.stats else csv_dir / "stats.txt"
+    policy_path = Path(args.policy) if args.policy else None
+    if policy_path and not policy_path.is_file():
+        policy_path = None  # spec: skip if absent
+
+    report_path = (
+        Path(args.report) if args.report else csv_dir / "mem_report.md"
+    )
+    metrics_path = (
+        Path(args.metrics) if args.metrics else csv_dir / "mem_metrics.json"
+    )
+    plot_path = Path(args.plot) if args.plot else csv_dir / "mem_trend.png"
+
+    # Build CLI overrides dict
+    cli: Dict[str, Any] = {}
+    if args.warmup_seconds is not None:
+        cli["warmup_seconds"] = args.warmup_seconds
+    if args.peak_rss_mb is not None:
+        cli["peak_rss_mb"] = args.peak_rss_mb
+    if args.leak_bytes_per_sec is not None:
+        cli["leak_bytes_per_sec"] = args.leak_bytes_per_sec
+    if args.rss_per_msim_kb is not None:
+        cli["rss_per_msim_inst_kb"] = args.rss_per_msim_kb
+    if args.require_stats_txt:
+        cli["require_stats_txt"] = True
+    if args.min_regression_samples is not None:
+        cli["min_regression_samples"] = args.min_regression_samples
+    cli["fail_mode"] = "fast" if args.fail_fast else "summary"
+
+    # Resolve config
+    DEFAULTS: Dict[str, Any] = {
+        "warmup_seconds": 30,
+        "peak_rss_mb": None,
+        "leak_bytes_per_sec": None,
+        "rss_per_msim_inst_kb": None,
+        "require_stats_txt": False,
+        "min_regression_samples": 5,
+        "fail_mode": "summary",
+    }
+    cfg = resolve_config(
+        cli=cli, env=os.environ, yaml_path=policy_path, defaults=DEFAULTS
+    )
+
+    # Load data
+    header, samples = load_csv(csv_path)
+    if not samples:
+        print("ERROR: no samples collected", file=sys.stderr)
+        return 2
+
+    if args.tag:
+        header["tag"] = args.tag
+
+    stats = load_stats(stats_path) if stats_path.is_file() else None
+
+    # Compute
+    metrics = compute_metrics(samples, stats, cfg)
+
+    # Plot
+    if not args.no_plot:
+        render_plot(samples, metrics, cfg, plot_path)
+
+    # Gate
+    verdict, exit_code, failures = evaluate_gate(
+        metrics, cfg, stats is not None
+    )
+
+    # Heaptrack summary
+    heaptrack_text = (
+        _summarize_heaptrack(args.heaptrack) if args.heaptrack else None
+    )
+
+    # Output
+    write_report(
+        header,
+        samples,
+        metrics,
+        cfg,
+        verdict,
+        failures,
+        heaptrack_text,
+        report_path,
+    )
+    write_metrics_json(header, metrics, cfg, verdict, failures, metrics_path)
+
+    print(f"Report: {report_path}")
+    print(f"Metrics: {metrics_path}")
+    if not args.no_plot:
+        print(f"Plot: {plot_path}")
+    print(f"Gate: {verdict} (exit {exit_code})")
+    return exit_code
+
+
+def _summarize_heaptrack(glob_pattern):
+    """Return top-10 allocators from heaptrack print output, or None."""
+    import glob as glob_mod
+
+    files = glob_mod.glob(glob_pattern)
+    if not files:
+        warnings.warn(f"no heaptrack files matching: {glob_pattern}")
+        return None
+    lines = []
+    for fp in files:
+        try:
+            lines.append(
+                Path(fp).read_text(encoding="utf-8", errors="replace")
+            )
+        except Exception:
+            pass
+    return "\n".join(lines[:200]) if lines else None
+
+
+if __name__ == "__main__":
+    sys.exit(main())
