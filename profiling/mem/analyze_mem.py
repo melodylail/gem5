@@ -68,6 +68,8 @@ def resolve_config(
     for key, default_val in defaults.items():
         value, source = default_val, "default"
         yaml_val = _read_yaml_key(yaml_path, key) if yaml_path else None
+        if yaml_val is _YAML_ERROR:
+            raise ConfigError(f"policy YAML syntax error in {yaml_path}")
         if yaml_val is not None:
             value, source = yaml_val, "yaml"
         env_var = _ENV_MAP.get(key)
@@ -541,6 +543,13 @@ def write_metrics_json(header, metrics, cfg, verdict, failures, out_path):
     return out_path
 
 
+_YAML_ERROR = object()
+
+
+class ConfigError(Exception):
+    """Policy YAML syntax or semantic error."""
+
+
 def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
     if yaml_path is None or not yaml_path.is_file():
         return None
@@ -552,7 +561,7 @@ def _read_yaml_key(yaml_path: Optional[Path], key: str) -> Optional[Any]:
             data = yaml.safe_load(fh)
     except Exception:
         warnings.warn(f"policy YAML syntax error in {yaml_path}")
-        return None
+        return _YAML_ERROR
     if not isinstance(data, dict):
         return None
     for k in data:
@@ -657,11 +666,22 @@ def main(argv=None) -> int:
         default=int(os.environ.get("MEM_MIN_REGRESSION_SAMPLES", "0")) or None,
         help="Min post-warmup samples [env: MEM_MIN_REGRESSION_SAMPLES]",
     )
-    ta.add_argument(
+    fail_group = ta.add_mutually_exclusive_group()
+    fail_group.add_argument(
         "--fail-fast",
-        action="store_true",
-        default=os.environ.get("MEM_FAIL_MODE", "summary") == "fast",
-        help="Stop at first breach [env: MEM_FAIL_MODE=fast]",
+        action="store_const",
+        dest="fail_mode",
+        const="fast",
+        default=None,
+        help="Stop at first breach [env: MEM_FAIL_MODE]",
+    )
+    fail_group.add_argument(
+        "--fail-summary",
+        action="store_const",
+        dest="fail_mode",
+        const="summary",
+        default=None,
+        help="Report all breaches (default) [env: MEM_FAIL_MODE]",
     )
 
     args = p.parse_args(argv)
@@ -700,7 +720,8 @@ def main(argv=None) -> int:
         cli["require_stats_txt"] = True
     if args.min_regression_samples is not None:
         cli["min_regression_samples"] = args.min_regression_samples
-    cli["fail_mode"] = "fast" if args.fail_fast else "summary"
+    if args.fail_mode is not None:
+        cli["fail_mode"] = args.fail_mode
 
     # Resolve config
     DEFAULTS: Dict[str, Any] = {
@@ -712,9 +733,13 @@ def main(argv=None) -> int:
         "min_regression_samples": 5,
         "fail_mode": "summary",
     }
-    cfg = resolve_config(
-        cli=cli, env=os.environ, yaml_path=policy_path, defaults=DEFAULTS
-    )
+    try:
+        cfg = resolve_config(
+            cli=cli, env=os.environ, yaml_path=policy_path, defaults=DEFAULTS
+        )
+    except ConfigError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
 
     # Load data
     header, samples = load_csv(csv_path)

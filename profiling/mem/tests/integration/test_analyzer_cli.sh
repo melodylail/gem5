@@ -108,5 +108,30 @@ assert_exit_code 0 "$ACTUAL_EXIT" "normal CSV + lenient.yaml → exit 0"
 echo "=== Test 4 PASSED ==="
 
 # ============================================================
+# Test 5: Malformed YAML → exit 2
+# ============================================================
+echo ""
+echo "=== Test 5: Malformed YAML → exit 2 ==="
+
+# Create a deliberately malformed YAML file on the fly
+MALFORMED_YAML="$TMPDIR/malformed.yaml"
+cat > "$MALFORMED_YAML" <<'YAMLEOF'
+warmup_seconds: 30
+invalid: [unclosed
+YAMLEOF
+
+set +e
+python3 "$ANALYZER" \
+    --csv "$FIXTURES_DIR/mem_trend_normal.csv" \
+    --policy "$MALFORMED_YAML" \
+    --no-plot 2>/dev/null
+ACTUAL_EXIT=$?
+set -e
+
+assert_exit_code 2 "$ACTUAL_EXIT" "malformed YAML → exit 2"
+
+echo "=== Test 5 PASSED ==="
+
+# ============================================================
 echo ""
 echo "=== All analyzer CLI integration tests passed ==="

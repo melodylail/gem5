@@ -5,7 +5,10 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from analyze_mem import resolve_config
+from analyze_mem import (
+    ConfigError,
+    resolve_config,
+)
 
 DEFAULTS = {
     "warmup_seconds": 30,
@@ -107,3 +110,11 @@ def test_all_keys_present(tmp_path):
     )
     for k in DEFAULTS:
         assert k in cfg
+
+
+def test_malformed_yaml_raises_configerror(tmp_path):
+    """Malformed YAML policy must raise ConfigError (not silently return None)."""
+    malformed = tmp_path / "malformed.yaml"
+    malformed.write_text("warmup_seconds: 30\ninvalid: [unclosed\n")
+    with pytest.raises(ConfigError):
+        resolve_config(cli={}, env={}, yaml_path=malformed, defaults=DEFAULTS)
