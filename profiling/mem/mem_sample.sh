@@ -13,6 +13,14 @@
 # See docs/superpowers/specs/2026-07-09-gem5-memory-trend-design.md §3.1.
 set -euo pipefail
 
+# ---------------------------------------------------------------------------
+# Dependency checks
+# ---------------------------------------------------------------------------
+if ! command -v bc >/dev/null 2>&1; then
+    echo "ERROR: bc is required for mem_sample.sh" >&2
+    exit 2
+fi
+
 SCRIPT_NAME="$(basename "$0")"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -246,6 +254,11 @@ sample_one() {
         _read_smaps_rollup
     elif [ "$MEM_ALLOW_FALLBACK" = "1" ] && [ -f "/proc/$PID/status" ]; then
         log_msg "smaps_rollup unavailable for PID $PID; falling back to /proc/$PID/status"
+        if [ "$FALLBACK_NOTED" = "0" ]; then
+            echo "# smaps_rollup_unavailable: true" >> "$CSV_PATH"
+            FALLBACK_NOTED=1
+            log_msg "noted smaps_rollup_unavailable in CSV"
+        fi
         _read_status_fallback
     elif [ "$MEM_ALLOW_FALLBACK" = "0" ]; then
         log_msg "smaps_rollup unavailable for PID $PID and fallback disabled; exiting"
@@ -380,6 +393,7 @@ SAMPLE_COUNT=0
 SAMPLE_START_MONO="$START_MONO"
 GEM5_PHASE="unknown"
 MONITOR_ONLY=0
+FALLBACK_NOTED=0
 
 log_msg "beginning sampling loop (interval=${INTERVAL_S}s)"
 
