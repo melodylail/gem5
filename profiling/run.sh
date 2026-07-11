@@ -61,10 +61,18 @@ if [ "${MEM_TREND:-0}" = "1" ]; then
         --tag "${MEM_RUN_TAG:-$(git rev-parse --short HEAD 2>/dev/null || echo untagged)}" \
         -- "$GEM5_BUILD" "$SCRIPT_DIR/configs/se_profile.py" \
         --binary "$WORKLOAD_BIN" --output-dir "$OUTPUT_DIR"
+    set +e
     python3 "$SCRIPT_DIR/mem/analyze_mem.py" \
         --csv "$OUTPUT_DIR/mem_trend.csv" \
         --stats "$OUTPUT_DIR/stats.txt" \
-        --policy "$SCRIPT_DIR/mem/mem_thresholds.yaml" || true
+        --policy "$SCRIPT_DIR/mem/mem_thresholds.yaml"
+    ANALYZER_EXIT=$?
+    set -e
+    if [ "$ANALYZER_EXIT" -eq 1 ]; then
+        echo "WARNING: memory gate FAILED (exit 1) -- review report" >&2
+    elif [ "$ANALYZER_EXIT" -eq 2 ]; then
+        echo "WARNING: memory analyzer error (exit 2)" >&2
+    fi
 fi
 
 echo ""
