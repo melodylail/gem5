@@ -237,9 +237,18 @@ def compute_metrics(
     warmup_s = cfg.get("warmup_seconds", (30, "default"))[0]
     min_samp = cfg.get("min_regression_samples", (5, "default"))[0]
 
+    _MARKER_PHASES = frozenset({"crashed", "exited", "sampler_cap_reached"})
+
     peak_rss = max(s["rss_kb"] for s in samples) if samples else 0.0
     peak_pss = max(s["pss_kb"] for s in samples) if samples else 0.0
-    final_rss = samples[-1]["rss_kb"] if samples else 0.0
+
+    # Use last real sample (skip marker rows with rss_kb=0)
+    final_rss = 0.0
+    for s in reversed(samples):
+        if s.get("gem5_phase", "") not in _MARKER_PHASES:
+            final_rss = s["rss_kb"]
+            break
+
     baseline = samples[0]["rss_kb"] if samples else 0.0
 
     post = [s for s in samples if s["ts_ms"] >= warmup_s * 1000.0]
