@@ -337,8 +337,16 @@ KERNEL="$(uname -r)"
 PAGE_SIZE="$(getconf PAGESIZE 2>/dev/null || echo 4096)"
 
 if [ "$MEM_APPEND" = "1" ] && [ -f "$CSV_PATH" ]; then
-    # Append mode: find offset from last data row, write segment marker
-    log_msg "append mode: reading existing CSV for offset"
+    # Validate existing CSV header matches expected column schema
+    _expected_header="ts_ms,rss_kb,pss_kb,uss_kb,heap_kb,anon_kb,file_kb,swap_kb,gem5_phase"
+    _existing_header="$(grep -m1 -v '^#' "$CSV_PATH" 2>/dev/null || echo "")"
+    if [ -n "$_existing_header" ] && [ "$_existing_header" != "$_expected_header" ]; then
+        echo "ERROR: existing CSV header mismatch" >&2
+        echo "  expected: $_expected_header" >&2
+        echo "  found:    $_existing_header" >&2
+        exit 2
+    fi
+    log_msg "append mode: header validated, reading existing CSV for offset"
 
     _last_line="$(tail -1 "$CSV_PATH" 2>/dev/null || echo "")"
     if [ -n "$_last_line" ] && ! echo "$_last_line" | grep -q '^#'; then
@@ -380,6 +388,9 @@ while true; do
     if [ "$MODE" = "spawn" ]; then
         if ! kill -0 "$GEM5_PID" 2>/dev/null; then
             log_msg "gem5 PID $GEM5_PID has exited"
+            _now_mono="$(awk '{print $1}' /proc/uptime)"
+            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000" | bc | cut -d. -f1)"
+            echo "${_ts_ms},0,-1,-1,-1,0,0,0,crashed" >> "$CSV_PATH"
             break
         fi
     else
@@ -411,6 +422,9 @@ while true; do
         if [ "$MEM_MAX_SAMPLES" != "0" ] && [ "$SAMPLE_COUNT" -ge "$MEM_MAX_SAMPLES" ]; then
             log_msg "max samples reached ($MEM_MAX_SAMPLES); capping"
             MONITOR_ONLY=1
+            _now_mono="$(awk '{print $1}' /proc/uptime)"
+            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000" | bc | cut -d. -f1)"
+            echo "${_ts_ms},0,-1,-1,-1,0,0,0,sampler_cap_reached" >> "$CSV_PATH"
         fi
     fi
 
