@@ -231,7 +231,7 @@ sample_one() {
         if [ -n "$cur_st" ] && [ "$cur_st" != "$STARTTIME" ]; then
             log_msg "PID $PID starttime changed ($STARTTIME -> $cur_st); treating as exit"
             now_mono="$(awk '{print $1}' /proc/uptime)"
-            ts_ms="$(echo "($now_mono - $START_MONO) * 1000" | bc | cut -d. -f1)"
+            ts_ms="$(echo "($now_mono - $START_MONO) * 1000 + ${TS_OFFSET:-0}" | bc | cut -d. -f1)"
             echo "${ts_ms},0,-1,-1,-1,0,0,0,exited" >> "$CSV_PATH"
             return 1
         fi
@@ -239,7 +239,7 @@ sample_one() {
 
     # Timestamp (CLOCK_MONOTONIC via /proc/uptime)
     now_mono="$(awk '{print $1}' /proc/uptime)"
-    ts_ms="$(echo "($now_mono - $START_MONO) * 1000" | bc | cut -d. -f1)"
+    ts_ms="$(echo "($now_mono - $START_MONO) * 1000 + ${TS_OFFSET:-0}" | bc | cut -d. -f1)"
 
     # Read memory counters
     if [ -f "/proc/$PID/smaps_rollup" ] && [ -r "/proc/$PID/smaps_rollup" ]; then
@@ -389,7 +389,7 @@ while true; do
         if ! kill -0 "$GEM5_PID" 2>/dev/null; then
             log_msg "gem5 PID $GEM5_PID has exited"
             _now_mono="$(awk '{print $1}' /proc/uptime)"
-            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000" | bc | cut -d. -f1)"
+            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000 + ${TS_OFFSET:-0}" | bc | cut -d. -f1)"
             echo "${_ts_ms},0,-1,-1,-1,0,0,0,crashed" >> "$CSV_PATH"
             break
         fi
@@ -406,7 +406,7 @@ while true; do
         if [ "$(echo "$_elapsed >= $MEM_MAX_DURATION_S" | bc -l 2>/dev/null || echo 0)" = "1" ]; then
             log_msg "max duration reached (${MEM_MAX_DURATION_S}s); capping"
             _now_mono="$(awk '{print $1}' /proc/uptime)"
-            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000" | bc | cut -d. -f1)"
+            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000 + ${TS_OFFSET:-0}" | bc | cut -d. -f1)"
             echo "${_ts_ms},0,-1,-1,-1,0,0,0,sampler_cap_reached" >> "$CSV_PATH"
             MONITOR_ONLY=1
         fi
@@ -423,7 +423,7 @@ while true; do
             log_msg "max samples reached ($MEM_MAX_SAMPLES); capping"
             MONITOR_ONLY=1
             _now_mono="$(awk '{print $1}' /proc/uptime)"
-            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000" | bc | cut -d. -f1)"
+            _ts_ms="$(echo "($_now_mono - $START_MONO) * 1000 + ${TS_OFFSET:-0}" | bc | cut -d. -f1)"
             echo "${_ts_ms},0,-1,-1,-1,0,0,0,sampler_cap_reached" >> "$CSV_PATH"
         fi
     fi
