@@ -50,6 +50,23 @@ perf record \
     --output-dir "$OUTPUT_DIR"
 
 echo "perf record done → $OUTPUT_DIR/perf.data"
+
+# 5. Memory trend (Layer 3) — opt-in via MEM_TREND=1
+if [ "${MEM_TREND:-0}" = "1" ]; then
+    echo ""
+    echo "=== Layer 3: memory trend (sidecar) ==="
+    mkdir -p "$OUTPUT_DIR"
+    "$SCRIPT_DIR/mem/mem_sample.sh" \
+        --output-dir "$OUTPUT_DIR" \
+        --tag "${MEM_RUN_TAG:-$(git rev-parse --short HEAD 2>/dev/null || echo untagged)}" \
+        -- "$GEM5_BUILD" "$SCRIPT_DIR/configs/se_profile.py" \
+        --binary "$WORKLOAD_BIN" --output-dir "$OUTPUT_DIR"
+    python3 "$SCRIPT_DIR/mem/analyze_mem.py" \
+        --csv "$OUTPUT_DIR/mem_trend.csv" \
+        --stats "$OUTPUT_DIR/stats.txt" \
+        --policy "$SCRIPT_DIR/mem/mem_thresholds.yaml" || true
+fi
+
 echo ""
 echo "=== Run complete ==="
 echo "Next: run ./analyze.sh to generate reports"
