@@ -160,6 +160,95 @@ collect_sys_mem() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: ensure proc_mem.csv with header
+# ---------------------------------------------------------------------------
+PROC_MEM_HEADER="ts_ms,wall_clock,pid,comm,state,threads,rss_kb,vsz_kb,pss_kb,uss_kb,swap_kb,cpu_percent,cmdline,mode"
+
+ensure_proc_mem_csv() {
+    local slice_dir="$1"
+    local csv="$slice_dir/proc_mem.csv"
+    mkdir -p "$slice_dir"
+    if [ ! -f "$csv" ]; then
+        echo "$PROC_MEM_HEADER" > "$csv"
+    fi
+    echo "$csv"
+}
+
+# ---------------------------------------------------------------------------
+# Core: collect proc memory (light / standard / detailed)
+# ---------------------------------------------------------------------------
+collect_proc_mem() {
+    local csv="$1"
+    local mode="$2"
+    local ts_ms wall
+
+    ts_ms=$(get_mono_ms)
+    wall=$(get_wall_clock)
+
+    for proc_dir in /proc/[0-9]*/; do
+        local pid
+        pid=$(basename "$proc_dir")
+
+        # Read comm
+        local comm=""
+        [ -r "$proc_dir/comm" ] && comm=$(tr -d '\n' < "$proc_dir/comm")
+
+        # Read status: State, VmRSS, VmSize, Threads, VmSwap
+        local state="" rss=0 vsz=0 threads=0 swap_kb=0
+        if [ -r "$proc_dir/status" ]; then
+            while IFS=: read -r key val; do
+                val="${val// /}"
+                case "$key" in
+                    State) state="${val:0:1}" ;;
+                    VmRSS) rss="${val%kB}" ;;
+                    VmSize) vsz="${val%kB}" ;;
+                    Threads) threads="$val" ;;
+                    VmSwap) swap_kb="${val%kB}" ;;
+                esac
+            done < "$proc_dir/status"
+        fi
+
+        # Skip if no state (process just exited)
+        [ -z "$state" ] && continue
+
+        # Light mode: pss=-1, uss=-1, swap=-1, cmdline=""
+        local pss=-1 uss=-1 cmdline=""
+        swap_kb=-1
+
+        # Standard / detailed: read smaps_rollup for PSS, USS
+        if [ "$mode" != "light" ] && [ -r "$proc_dir/smaps_rollup" ]; then
+            while IFS=: read -r key val; do
+                val="${val//kB/}"
+                val="${val// /}"
+                case "$key" in
+                    Pss) pss="$val" ;;
+                    Private_Dirty|Private_Clean)
+                        uss=$((uss + val))
+                        ;;
+                esac
+            done < "$proc_dir/smaps_rollup"
+            [ "$mode" != "light" ] && cmdline=$(tr '\0' ' ' < "$proc_dir/cmdline" 2>/dev/null | cut -c1-256 | tr -d '\n' || echo "")
+        fi
+
+        # CPU percent: approximate from /proc/pid/stat (utime + stime)
+        local cpu_percent=0
+        if [ -r "$proc_dir/stat" ]; then
+            local stat_line
+            stat_line=$(tr '\n' ' ' < "$proc_dir/stat")
+            local utime stime
+            utime=$(echo "$stat_line" | awk '{print $14}')
+            stime=$(echo "$stat_line" | awk '{print $15}')
+            cpu_percent=$(echo "scale=1; ($utime + $stime) / 100.0" | bc 2>/dev/null || echo 0)
+            # This is a raw counter, not real percent — acceptable for light mode
+            # TODO: proper delta-based CPU% in standard mode
+        fi
+
+        echo "${ts_ms},${wall},${pid},${comm},${state},${threads},${rss},${vsz},${pss},${uss},${swap_kb},${cpu_percent},${cmdline},${mode}" \
+            >> "$csv"
+    done
+}
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 START_MONO=$(awk '{print $1}' /proc/uptime)
@@ -186,11 +275,26 @@ run_one_sample() {
         collect_sys_mem "$csv"
     fi
 
+    # Collect proc_mem
+    if [ "$PROC_ONLY" = "1" ] || [ "$FULL_MODE" = "1" ]; then
+        local pcsv
+        pcsv=$(ensure_proc_mem_csv "$CURRENT_SLICE_DIR")
+        collect_proc_mem "$pcsv" "$MEM_MODE"
+    fi
+
     SAMPLE_COUNT=$((SAMPLE_COUNT + 1))
 }
 
-# --sys-only with --max-samples: just collect N samples and exit
+# --sys-only or --proc-only with --max-samples: just collect N samples and exit
 if [ "$SYS_ONLY" = "1" ] && [ "$MEM_MAX_SAMPLES" -gt 0 ]; then
+    for _ in $(seq 1 "$MEM_MAX_SAMPLES"); do
+        run_one_sample
+        sleep "$INTERVAL_S"
+    done
+    exit 0
+fi
+
+if [ "$PROC_ONLY" = "1" ] && [ "$MEM_MAX_SAMPLES" -gt 0 ]; then
     for _ in $(seq 1 "$MEM_MAX_SAMPLES"); do
         run_one_sample
         sleep "$INTERVAL_S"

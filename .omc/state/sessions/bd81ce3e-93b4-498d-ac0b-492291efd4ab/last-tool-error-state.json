@@ -1,0 +1,7 @@
+{
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"/home/luq/Dev/opensource/gem5/profiling/mem/tests/unit\"}",
+  "error": "EISDIR: illegal operation on a directory, read '/home/luq/Dev/opensource/gem5/profiling/mem/tests/unit'",
+  "timestamp": "2026-07-10T08:07:57.216Z",
+  "retry_count": 1
+}

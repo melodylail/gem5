@@ -1,0 +1,70 @@
+mindmap
+  root(("Gem5 高并发仿真<br/>性能衰减排查与评估"))
+    ("问题背景")
+      ::icon(fa fa-exclamation-triangle)
+      230个仿真任务
+      内存使用率80%
+      速度下降10倍
+      HPC环境高并发常见现象
+    ("六大根因诊断")
+      ("内存带宽瓶颈")
+        pcm-memory Intel
+        amd-uprof AMD
+        带宽接近理论上限？
+      ("NUMA不平衡")
+        numastat -m 查看节点
+        numastat -s numa_miss
+        跨节点访问延迟极高
+        局部节点耗尽触发Swap
+      ("CPU核心超载")
+        lscpu 确认物理核心数
+        top/htop Load Average
+        vmstat cs上下文切换
+        超线程对计算密集无效
+      ("LLC缓存争抢")
+        perf stat cache-misses
+        dTLB-load-misses
+        230进程挤占L3 Cache
+        TLB频繁Miss
+      ("THP系统停顿")
+        /proc/vmstat thp指标
+        khugepaged CPU占用
+        thp_fault_fallback高
+        内存碎片化时严重阻塞
+      ("磁盘I/O争抢")
+        iostat -x 1
+        %util接近100%
+        await异常高
+        Trace/Log写入打满IOPS
+    ("评估方法")
+      ("建立基准线")
+        系统空闲单独运行
+        记录理想状态指标
+      ("宏观时间评估")
+        场景A: Real增User不变→排队等待
+        场景B: Real和User同步增→CPU效率低
+        time命令 / bhist -l
+      ("Gem5内部指标")
+        仿真速度 = simInsts ÷ hostSeconds
+        衰减率 = 1 - 高负载速度 ÷ 基准速度
+        提取stats.txt
+      ("微观硬件指标")
+        perf stat -p PID -d
+        IPC正常1-2 低于0.1=瓶颈
+        LLC-load-misses 未命中率
+      ("汇总对比表")
+        Job ID|内存|NUMA|CPU负载
+        Real Time|User Time|仿真速度|倍数
+    ("优化建议")
+      ("限制并发数")
+        按物理核心+内存带宽
+        非仅看内存容量
+      ("绑定NUMA节点")
+        numactl 亲和性绑定
+        LSF 调度策略
+      ("关闭THP碎片整理")
+        echo madvise > defrag
+        减少khugepaged开销
+      ("优化I/O")
+        输出到NVMe SSD
+        关闭不必要Trace输出

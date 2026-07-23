@@ -1,0 +1,493 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1784167031279,
+  "projectRoot": "/home/luq/Dev/opensource/gem5",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "pyproject.toml",
+          "requirements.txt"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "pip",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": "pytest",
+    "lintCommand": "ruff check",
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "src",
+      "tests"
+    ],
+    "gitBranches": {
+      "defaultBranch": "stable",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "build": {
+      "path": "build",
+      "purpose": "Build output",
+      "fileCount": 0,
+      "lastAccessed": 1784167031271,
+      "keyFiles": []
+    },
+    "build_opts": {
+      "path": "build_opts",
+      "purpose": null,
+      "fileCount": 22,
+      "lastAccessed": 1784167031271,
+      "keyFiles": [
+        "ALL",
+        "ARM",
+        "ARM_MESI_Three_Level",
+        "ARM_MESI_Three_Level_HTM",
+        "ARM_MOESI_hammer"
+      ]
+    },
+    "build_tools": {
+      "path": "build_tools",
+      "purpose": null,
+      "fileCount": 14,
+      "lastAccessed": 1784167031273,
+      "keyFiles": [
+        "blob.py",
+        "code_formatter.py",
+        "cxx_config_cc.py",
+        "cxx_config_hh.py",
+        "debugflagcc.py"
+      ]
+    },
+    "configs": {
+      "path": "configs",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784167031274,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 7,
+      "lastAccessed": 1784167031274,
+      "keyFiles": [
+        "Gem5 高并发仿真性能衰减排查与评估指南.md",
+        "Makefile",
+        "README",
+        "conf.py",
+        "gem5-sphinx"
+      ]
+    },
+    "ext": {
+      "path": "ext",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784167031274,
+      "keyFiles": []
+    },
+    "include": {
+      "path": "include",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784167031274,
+      "keyFiles": []
+    },
+    "profiling": {
+      "path": "profiling",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1784167031274,
+      "keyFiles": [
+        "analyze.sh",
+        "build.sh",
+        "env.sh",
+        "run.sh"
+      ]
+    },
+    "site_scons": {
+      "path": "site_scons",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1784167031275,
+      "keyFiles": [
+        "gem5_python_paths.py",
+        "site_init.py"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 3,
+      "lastAccessed": 1784167031275,
+      "keyFiles": [
+        "Doxyfile",
+        "Kconfig",
+        "SConscript"
+      ]
+    },
+    "system": {
+      "path": "system",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1784167031276,
+      "keyFiles": []
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 4,
+      "lastAccessed": 1784167031276,
+      "keyFiles": [
+        "main.py",
+        "run.py",
+        "run_pyunit.py"
+      ]
+    },
+    "util": {
+      "path": "util",
+      "purpose": null,
+      "fileCount": 39,
+      "lastAccessed": 1784167031277,
+      "keyFiles": [
+        "Makefile",
+        "SConscript",
+        "checkpoint-tester.py",
+        "checkpoint_aggregator.py",
+        "checktrace.sh"
+      ]
+    },
+    "configs/dist": {
+      "path": "configs/dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 1,
+      "lastAccessed": 1784167031278,
+      "keyFiles": [
+        "sw.py"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "profiling/mem/analyze_mem.py",
+      "accessCount": 58,
+      "lastAccessed": 1783786717351,
+      "type": "file"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-07-09-gem5-memory-trend-design.md",
+      "accessCount": 10,
+      "lastAccessed": 1783786292047,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/mem_thresholds.yaml",
+      "accessCount": 9,
+      "lastAccessed": 1783784623049,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/unit/conftest.py",
+      "accessCount": 9,
+      "lastAccessed": 1783786567570,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/unit/test_config_resolution.py",
+      "accessCount": 9,
+      "lastAccessed": 1783787218893,
+      "type": "file"
+    },
+    {
+      "path": "profiling/run.sh",
+      "accessCount": 7,
+      "lastAccessed": 1783786726425,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/unit/test_gate.py",
+      "accessCount": 6,
+      "lastAccessed": 1783786568076,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-6-report.md",
+      "accessCount": 5,
+      "lastAccessed": 1783744760105,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/mem_trend_normal.csv",
+      "accessCount": 5,
+      "lastAccessed": 1783784111070,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/unit/test_metrics.py",
+      "accessCount": 5,
+      "lastAccessed": 1783786573434,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-6-brief.md",
+      "accessCount": 4,
+      "lastAccessed": 1783744759776,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/mem_trend_appended.csv",
+      "accessCount": 4,
+      "lastAccessed": 1783782932625,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/policies/lenient.yaml",
+      "accessCount": 4,
+      "lastAccessed": 1783786568481,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/policies/strict.yaml",
+      "accessCount": 4,
+      "lastAccessed": 1783786568828,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/unit/test_csv_parser.py",
+      "accessCount": 4,
+      "lastAccessed": 1783786573867,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-1-brief.md",
+      "accessCount": 3,
+      "lastAccessed": 1783606122922,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/unit/__init__.py",
+      "accessCount": 3,
+      "lastAccessed": 1783782743789,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/__init__.py",
+      "accessCount": 3,
+      "lastAccessed": 1783782744136,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/mem_trend_leak.csv",
+      "accessCount": 3,
+      "lastAccessed": 1783784111207,
+      "type": "file"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-06-30-gem5-perf-profiling-se-plan.md",
+      "accessCount": 2,
+      "lastAccessed": 1783590241931,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-1-report.md",
+      "accessCount": 2,
+      "lastAccessed": 1783606123310,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-2-brief.md",
+      "accessCount": 2,
+      "lastAccessed": 1783647850826,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-2-report.md",
+      "accessCount": 2,
+      "lastAccessed": 1783647851232,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-3-brief.md",
+      "accessCount": 2,
+      "lastAccessed": 1783656082252,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-3-report.md",
+      "accessCount": 2,
+      "lastAccessed": 1783656082555,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-4-brief.md",
+      "accessCount": 2,
+      "lastAccessed": 1783664866339,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-5-brief.md",
+      "accessCount": 2,
+      "lastAccessed": 1783670689718,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-7-brief.md",
+      "accessCount": 2,
+      "lastAccessed": 1783774408591,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/unit/test_stats_txt_parser.py",
+      "accessCount": 2,
+      "lastAccessed": 1783782730892,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/mem_trend_malformed.csv",
+      "accessCount": 2,
+      "lastAccessed": 1783782736339,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/stats_normal.txt",
+      "accessCount": 2,
+      "lastAccessed": 1783782744789,
+      "type": "file"
+    },
+    {
+      "path": "profiling/mem/tests/fixtures/stats_multi_dump.txt",
+      "accessCount": 2,
+      "lastAccessed": 1783782744836,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1782813055644,
+      "type": "file"
+    },
+    {
+      "path": "AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1782813055695,
+      "type": "file"
+    },
+    {
+      "path": "pyproject.toml",
+      "accessCount": 1,
+      "lastAccessed": 1782813089341,
+      "type": "file"
+    },
+    {
+      "path": "requirements.txt",
+      "accessCount": 1,
+      "lastAccessed": 1782813089395,
+      "type": "file"
+    },
+    {
+      "path": "SConstruct",
+      "accessCount": 1,
+      "lastAccessed": 1782813119606,
+      "type": "file"
+    },
+    {
+      "path": "tests/main.py",
+      "accessCount": 1,
+      "lastAccessed": 1782813145674,
+      "type": "file"
+    },
+    {
+      "path": "tests/run_pyunit.py",
+      "accessCount": 1,
+      "lastAccessed": 1782813145730,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 1,
+      "lastAccessed": 1782814241469,
+      "type": "file"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-07-09-gem5-memory-trend.md",
+      "accessCount": 1,
+      "lastAccessed": 1783599487375,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/review-3c26f7185b..13dd373212.diff",
+      "accessCount": 1,
+      "lastAccessed": 1783606123789,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/review-13dd373212..6c4537f715.diff",
+      "accessCount": 1,
+      "lastAccessed": 1783647851495,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/review-6c4537f715..cf8e2464e0.diff",
+      "accessCount": 1,
+      "lastAccessed": 1783656083170,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-4-report.md",
+      "accessCount": 1,
+      "lastAccessed": 1783664387531,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/review-cf8e2464e0..b19efe107a.diff",
+      "accessCount": 1,
+      "lastAccessed": 1783664866796,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/task-5-report.md",
+      "accessCount": 1,
+      "lastAccessed": 1783666863759,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/review-b19efe107a..c904f71274.diff",
+      "accessCount": 1,
+      "lastAccessed": 1783670690197,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/review-c904f71274..9187256f83.diff",
+      "accessCount": 1,
+      "lastAccessed": 1783738796300,
+      "type": "file"
+    },
+    {
+      "path": ".superpowers/sdd/review-c904f71274..b768ad1925.diff",
+      "accessCount": 1,
+      "lastAccessed": 1783744760414,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

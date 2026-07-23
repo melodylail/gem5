@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "entries": {
+    "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
+      "last_emitted_at_ms": 1783787546029,
+      "message": "Verify changes work after editing. Test functionality before marking complete."
+    },
+    "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
+      "last_emitted_at_ms": 1783787493671,
+      "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
+    },
+    "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
+      "last_emitted_at_ms": 1783787211011,
+      "message": "Read multiple files in parallel when possible for faster analysis."
+    },
+    "bab04e82721d86eeaace30ebcf5f02ac3bcbac6e08578a6742701b5afce901ec": {
+      "last_emitted_at_ms": 1783786523086,
+      "message": "Spawning agent: unknown (sonnet) | Task: Fix all Critical+Important findings"
+    },
+    "577714ef19ea7011816a2151a1b09735dc36f98798793175041871b936eec51a": {
+      "last_emitted_at_ms": 1783786285726,
+      "message": "Spawning agent: unknown (sonnet) | Task: Final whole-branch review"
+    }
+  },
+  "updated_at": "2026-07-11T16:32:26.029Z"
+}

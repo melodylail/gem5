@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "entries": {
+    "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
+      "last_emitted_at_ms": 1783780340326,
+      "message": "Verify changes work after editing. Test functionality before marking complete."
+    },
+    "dab69b802c387e091923cf8709ce92e4427085223bec21d9d291a7d82069500a": {
+      "last_emitted_at_ms": 1783780331596,
+      "message": "Spawning agent: unknown (haiku) | Task: Fix Task 8 Important issues"
+    },
+    "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
+      "last_emitted_at_ms": 1783780232665,
+      "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
+    },
+    "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
+      "last_emitted_at_ms": 1783780193892,
+      "message": "Read multiple files in parallel when possible for faster analysis."
+    },
+    "30f7afcbe2f6a89b7e0bd6a5f5050b6b32bdb3acc37b78db2ef08a48b3084e87": {
+      "last_emitted_at_ms": 1783780191486,
+      "message": "Spawning agent: unknown (haiku) | Task: Review Task 8 (spec + quality)"
+    }
+  },
+  "updated_at": "2026-07-11T14:32:20.326Z"
+}

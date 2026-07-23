@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"echo \\\"=== perf-profiling already contains impl/perf-profiling-setup? ===\\\" && git merge-base --is-ancestor impl/perf-profiling-setup perf-profiling && echo \\\"YES — already merged, nothing...",
+  "error": "Exit code 1\n=== perf-profiling already contains impl/perf-profiling-setup? ===\nYES — already merged, nothing to do\n\n=== deleting local ===\nFAILED: git branch -d impl/perf-profiling-setup\nerror: cannot delete branch 'impl/perf-profiling-setup' used by worktree at '/home/luq/Dev/opensource/gem5/.worktrees/perf-profiling-impl'",
+  "timestamp": "2026-07-11T16:54:56.240Z",
+  "retry_count": 1
+}

@@ -1,0 +1,105 @@
+{
+  "direction": "LR",
+  "nodes": [
+    {"id": "root", "label": "高并发性能定位", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#4a90d9;strokeColor=#2c5f8a;fontColor=#ffffff;fontSize=16;fontStyle=1;", "width": 180, "height": 50},
+
+    {"id": "现状", "label": "现状", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#f5a623;strokeColor=#c17d11;fontColor=#ffffff;fontSize=14;fontStyle=1;", "width": 120, "height": 44},
+    {"id": "分析结果", "label": "分析结果", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#7ed321;strokeColor=#5a9e18;fontColor=#ffffff;fontSize=14;fontStyle=1;", "width": 120, "height": 44},
+    {"id": "后续推进", "label": "后续推进", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#9b59b6;strokeColor=#7d3c98;fontColor=#ffffff;fontSize=14;fontStyle=1;", "width": 120, "height": 44},
+
+    {"id": "n_历史数据", "label": "历史数据", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f5a623;fontSize=12;fontStyle=1;", "width": 120, "height": 36},
+    {"id": "n_缺基线", "label": "缺少有效基线", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#f5a623;fontSize=12;fontStyle=1;", "width": 130, "height": 36},
+
+    {"id": "n_LSF", "label": "历史LSF数据", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f5a623;fontSize=10;", "width": 110, "height": 28},
+    {"id": "n_cegc", "label": "cegc数据", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f5a623;fontSize=10;", "width": 110, "height": 28},
+    {"id": "n_预留", "label": "lsf预留验证", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f5a623;fontSize=10;", "width": 110, "height": 28},
+    {"id": "n_云", "label": "业界云服务", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f5a623;fontSize=10;", "width": 110, "height": 28},
+    {"id": "n_gem5", "label": "local gem5验证", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#f5a623;fontSize=10;", "width": 120, "height": 28},
+
+    {"id": "n_mp基线", "label": "mp可信基线数据", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#e65100;fontSize=11;fontStyle=1;", "width": 140, "height": 36},
+    {"id": "n_优化变化", "label": "引入优化后变化", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#e65100;fontSize=11;fontStyle=1;", "width": 140, "height": 36},
+    {"id": "n_TI", "label": "线上数据需TI配合", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#ffccbc;strokeColor=#d84315;fontSize=10;", "width": 140, "height": 28},
+
+    {"id": "n_case", "label": "case覆盖率", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;", "width": 100, "height": 28},
+    {"id": "n_跟踪", "label": "跟踪数据", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;", "width": 100, "height": 28},
+    {"id": "n_LTO", "label": "LTO", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;", "width": 60, "height": 26},
+    {"id": "n_PGO", "label": "PGO", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;", "width": 60, "height": 26},
+    {"id": "n_常量", "label": "常量编译", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;", "width": 70, "height": 26},
+    {"id": "n_gcc", "label": "gcc升级", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;", "width": 70, "height": 26},
+    {"id": "n_link", "label": "link升级", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#e65100;fontSize=10;", "width": 70, "height": 26},
+
+    {"id": "n_拥堵", "label": "LSF MP case拥堵", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#7ed321;fontSize=10;", "width": 140, "height": 28},
+    {"id": "n_profiling", "label": "cegc profiling结果", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontSize=11;fontStyle=1;", "width": 140, "height": 36},
+    {"id": "n_tcmalloc_v", "label": "验证tcmalloc使能", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontSize=11;fontStyle=1;", "width": 150, "height": 36},
+    {"id": "n_host", "label": "host负载角度分析", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#7ed321;fontSize=10;", "width": 140, "height": 28},
+    {"id": "n_问题", "label": "分析时发现的问题", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;fontSize=11;fontStyle=1;", "width": 150, "height": 36},
+
+    {"id": "n_低1", "label": "低负载", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;fontSize=10;", "width": 70, "height": 26},
+    {"id": "n_高1", "label": "高负载", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;fontSize=10;", "width": 70, "height": 26},
+    {"id": "n_低2", "label": "低负载", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;fontSize=10;", "width": 70, "height": 26},
+    {"id": "n_fast_opt", "label": "fast通过 opt不过", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;fontSize=10;", "width": 130, "height": 26},
+    {"id": "n_fast_tcmalloc", "label": "fast不过 tcmalloc过", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;fontSize=10;", "width": 150, "height": 26},
+    {"id": "n_变化大", "label": "两周数据变化大", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#388e3c;fontSize=10;", "width": 120, "height": 26},
+
+    {"id": "n_tcmalloc_on", "label": "tcmalloc使能", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#9b59b6;fontSize=10;", "width": 120, "height": 28},
+    {"id": "n_分类", "label": "job分类资源预留", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#9b59b6;fontSize=10;", "width": 130, "height": 28},
+    {"id": "n_详细", "label": "详细性能分析", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=11;fontStyle=1;", "width": 130, "height": 36},
+
+    {"id": "n_基线", "label": "基线数据", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=11;fontStyle=1;", "width": 110, "height": 36},
+    {"id": "n_调优", "label": "调优各种参数", "style": "rounded=1;whiteSpace=wrap;html=1;fillColor=#e1bee7;strokeColor=#6a1b9a;fontSize=11;fontStyle=1;", "width": 120, "height": 36},
+    {"id": "n_论文", "label": "论文结论验证", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=10;", "width": 120, "height": 28},
+
+    {"id": "n_低基线", "label": "低负载基线", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=10;", "width": 90, "height": 26},
+    {"id": "n_高基线", "label": "高负载基线", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=10;", "width": 90, "height": 26},
+    {"id": "n_编译器", "label": "编译器", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=10;", "width": 70, "height": 26},
+    {"id": "n_OS", "label": "OS", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=10;", "width": 50, "height": 26},
+    {"id": "n_硬件", "label": "硬件feature", "style": "rounded=0;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#6a1b9a;fontSize=10;", "width": 90, "height": 26}
+  ],
+  "edges": [
+    {"source": "root", "target": "现状"},
+    {"source": "root", "target": "分析结果"},
+    {"source": "root", "target": "后续推进"},
+
+    {"source": "现状", "target": "n_历史数据"},
+    {"source": "现状", "target": "n_缺基线"},
+    {"source": "n_历史数据", "target": "n_LSF"},
+    {"source": "n_历史数据", "target": "n_cegc"},
+    {"source": "n_历史数据", "target": "n_预留"},
+    {"source": "n_历史数据", "target": "n_云"},
+    {"source": "n_历史数据", "target": "n_gem5"},
+    {"source": "n_缺基线", "target": "n_mp基线"},
+    {"source": "n_缺基线", "target": "n_优化变化"},
+    {"source": "n_缺基线", "target": "n_TI"},
+    {"source": "n_mp基线", "target": "n_case"},
+    {"source": "n_mp基线", "target": "n_跟踪"},
+    {"source": "n_优化变化", "target": "n_LTO"},
+    {"source": "n_优化变化", "target": "n_PGO"},
+    {"source": "n_优化变化", "target": "n_常量"},
+    {"source": "n_优化变化", "target": "n_gcc"},
+    {"source": "n_优化变化", "target": "n_link"},
+
+    {"source": "分析结果", "target": "n_拥堵"},
+    {"source": "分析结果", "target": "n_profiling"},
+    {"source": "分析结果", "target": "n_tcmalloc_v"},
+    {"source": "分析结果", "target": "n_host"},
+    {"source": "分析结果", "target": "n_问题"},
+    {"source": "n_profiling", "target": "n_低1"},
+    {"source": "n_profiling", "target": "n_高1"},
+    {"source": "n_tcmalloc_v", "target": "n_低2"},
+    {"source": "n_问题", "target": "n_fast_opt"},
+    {"source": "n_问题", "target": "n_fast_tcmalloc"},
+    {"source": "n_问题", "target": "n_变化大"},
+
+    {"source": "后续推进", "target": "n_tcmalloc_on"},
+    {"source": "后续推进", "target": "n_分类"},
+    {"source": "后续推进", "target": "n_详细"},
+    {"source": "n_详细", "target": "n_基线"},
+    {"source": "n_详细", "target": "n_调优"},
+    {"source": "n_详细", "target": "n_论文"},
+    {"source": "n_基线", "target": "n_低基线"},
+    {"source": "n_基线", "target": "n_高基线"},
+    {"source": "n_调优", "target": "n_编译器"},
+    {"source": "n_调优", "target": "n_OS"},
+    {"source": "n_调优", "target": "n_硬件"}
+  ]
+}

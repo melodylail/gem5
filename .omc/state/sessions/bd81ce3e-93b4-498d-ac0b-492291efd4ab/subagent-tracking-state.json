@@ -1,0 +1,136 @@
+{
+  "agents": [
+    {
+      "agent_id": "ab9fe06f1440b9de2",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-09T13:00:30.932Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-09T13:54:05.044Z",
+      "duration_ms": 3214112
+    },
+    {
+      "agent_id": "aeee12ac29c7bf88d",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-09T14:07:38.685Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-09T14:11:21.656Z",
+      "duration_ms": 222971
+    },
+    {
+      "agent_id": "a4d26cce6f1496249",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-09T23:33:57.142Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T01:35:47.216Z",
+      "duration_ms": 7310074
+    },
+    {
+      "agent_id": "aaa941cb9866206a0",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T01:43:06.032Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T01:50:03.366Z",
+      "duration_ms": 417334
+    },
+    {
+      "agent_id": "aedc026166e1296af",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T01:55:49.493Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T03:03:20.355Z",
+      "duration_ms": 4050862
+    },
+    {
+      "agent_id": "a404bc20d9e10229f",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T04:00:18.391Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T04:04:01.130Z",
+      "duration_ms": 222739
+    },
+    {
+      "agent_id": "ad07587d69d222b95",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T04:00:21.301Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T06:21:54.674Z",
+      "duration_ms": 8493373
+    },
+    {
+      "agent_id": "a9355209e8cba2f9e",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T06:26:42.100Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T06:33:45.308Z",
+      "duration_ms": 423208
+    },
+    {
+      "agent_id": "a69bac2fddd45b808",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T06:26:44.686Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T07:03:10.243Z",
+      "duration_ms": 2185557
+    },
+    {
+      "agent_id": "a4a4e55e294ef1db8",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T08:03:45.986Z",
+      "parent_mode": "none",
+      "status": "failed",
+      "completed_at": "2026-07-10T08:25:25.370Z",
+      "duration_ms": 1299384,
+      "output_summary": "Marked as stale during unmatched stop reconciliation - exceeded timeout"
+    },
+    {
+      "agent_id": "a8132c20b3a2c238c",
+      "agent_type": "general-purpose",
+      "started_at": "2026-07-10T08:03:48.309Z",
+      "parent_mode": "none",
+      "status": "failed",
+      "completed_at": "2026-07-10T08:25:25.370Z",
+      "duration_ms": 1297061,
+      "output_summary": "Marked as stale during unmatched stop reconciliation - exceeded timeout"
+    },
+    {
+      "agent_id": "a12d9fcdfc568c3c8",
+      "agent_type": "unknown",
+      "started_at": "2026-07-10T08:25:25.370Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T08:25:25.370Z",
+      "duration_ms": 0
+    },
+    {
+      "agent_id": "aa055198115185daa",
+      "agent_type": "unknown",
+      "started_at": "2026-07-10T08:33:27.083Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T08:33:27.083Z",
+      "duration_ms": 0
+    },
+    {
+      "agent_id": "a90261856dd02c25e",
+      "agent_type": "unknown",
+      "started_at": "2026-07-10T08:38:28.882Z",
+      "parent_mode": "none",
+      "status": "completed",
+      "completed_at": "2026-07-10T08:38:28.882Z",
+      "duration_ms": 0
+    }
+  ],
+  "total_spawned": 11,
+  "total_completed": 12,
+  "total_failed": 2,
+  "last_updated": "2026-07-10T08:38:29.017Z"
+}
