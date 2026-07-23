@@ -102,8 +102,8 @@ echo "  ok: mode=light on all rows"
 # Verify light-mode sentinel: pss_kb=-1, uss_kb=-1
 for pid in "$PID1" "$PID2" "$PID3"; do
     LINE=$(grep ",${pid}," "$PROC_CSV" | head -1)
-    PSS=$(echo "$LINE" | cut -d, -f10)
-    USS=$(echo "$LINE" | cut -d, -f11)
+    PSS=$(echo "$LINE" | cut -d, -f9)
+    USS=$(echo "$LINE" | cut -d, -f10)
     if [ "$PSS" != "-1" ]; then
         echo "FAIL: light mode should have pss_kb=-1, got $PSS" >&2
         exit 1

@@ -197,7 +197,7 @@ collect_proc_mem() {
         local state="" rss=0 vsz=0 threads=0 swap_kb=0
         if [ -r "$proc_dir/status" ]; then
             while IFS=: read -r key val; do
-                val="${val// /}"
+                val="${val//[[:space:]]/}"
                 case "$key" in
                     State) state="${val:0:1}" ;;
                     VmRSS) rss="${val%kB}" ;;
@@ -213,21 +213,33 @@ collect_proc_mem() {
 
         # Light mode: pss=-1, uss=-1, swap=-1, cmdline=""
         local pss=-1 uss=-1 cmdline=""
-        swap_kb=-1
+        if [ "$mode" = "light" ]; then
+            swap_kb=-1
+        fi
+
+        # Standard / detailed: reset PSS/USS/Swap to read from smaps
+        if [ "$mode" != "light" ]; then
+            pss=0
+            uss=0
+        fi
 
         # Standard / detailed: read smaps_rollup for PSS, USS
         if [ "$mode" != "light" ] && [ -r "$proc_dir/smaps_rollup" ]; then
+            local _smaps_ok=0
             while IFS=: read -r key val; do
+                _smaps_ok=1
                 val="${val//kB/}"
-                val="${val// /}"
+                val="${val//[[:space:]]/}"
                 case "$key" in
                     Pss) pss="$val" ;;
                     Private_Dirty|Private_Clean)
                         uss=$((uss + val))
                         ;;
                 esac
-            done < "$proc_dir/smaps_rollup"
-            [ "$mode" != "light" ] && cmdline=$(tr '\0' ' ' < "$proc_dir/cmdline" 2>/dev/null | cut -c1-256 | tr -d '\n' || echo "")
+            done < "$proc_dir/smaps_rollup" 2>/dev/null || true
+            if [ "$_smaps_ok" = "1" ]; then
+                [ "$mode" != "light" ] && cmdline=$(tr '\0' ' ' < "$proc_dir/cmdline" 2>/dev/null | cut -c1-256 | tr -d '\n' || echo "")
+            fi
         fi
 
         # CPU percent: approximate from /proc/pid/stat (utime + stime)
