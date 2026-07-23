@@ -27,10 +27,6 @@ SYS_ONLY=0
 PROC_ONLY=0
 FULL_MODE=0
 
-if [ $# -eq 0 ]; then
-    FULL_MODE=1
-fi
-
 # ---------------------------------------------------------------------------
 # CLI parsing
 # ---------------------------------------------------------------------------
@@ -62,6 +58,11 @@ while [ $# -gt 0 ]; do
         *) echo "ERROR: unknown option: $1" >&2; exit 2 ;;
     esac
 done
+
+# Determine mode: if neither --sys-only nor --proc-only, run full mode
+if [ "$SYS_ONLY" = "0" ] && [ "$PROC_ONLY" = "0" ]; then
+    FULL_MODE=1
+fi
 
 # ---------------------------------------------------------------------------
 # Helper: timestamp
@@ -261,6 +262,83 @@ collect_proc_mem() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: ensure kswapd.csv with header
+# ---------------------------------------------------------------------------
+KSWAPD_HEADER="ts_ms,wall_clock,pid,comm,state,cpu_percent,rss_kb,wchan,stack"
+
+ensure_kswapd_csv() {
+    local slice_dir="$1"
+    local csv="$slice_dir/kswapd.csv"
+    mkdir -p "$slice_dir"
+    if [ ! -f "$csv" ]; then
+        echo "$KSWAPD_HEADER" > "$csv"
+    fi
+    echo "$csv"
+}
+
+# ---------------------------------------------------------------------------
+# Core: collect kswapd activity
+# ---------------------------------------------------------------------------
+collect_kswapd() {
+    local csv="$1"
+    local ts_ms wall
+
+    ts_ms=$(get_mono_ms)
+    wall=$(get_wall_clock)
+
+    local found=0
+    for kdir in /proc/[0-9]*/; do
+        local kpid kcomm
+        kpid=$(basename "$kdir")
+        [ -r "$kdir/comm" ] && kcomm=$(tr -d '\n' < "$kdir/comm")
+        if [[ ! "$kcomm" =~ ^kswapd[0-9]*$ ]]; then
+            continue
+        fi
+        found=1
+
+        # State, RSS
+        local kstate="" krss=0
+        if [ -r "$kdir/status" ]; then
+            while IFS=: read -r key val; do
+                val="${val//[[:space:]]/}"
+                case "$key" in
+                    State) kstate="${val:0:1}" ;;
+                    VmRSS) krss="${val%kB}" ;;
+                esac
+            done < "$kdir/status"
+        fi
+
+        # CPU% from /proc/pid/stat
+        local kcpu=0
+        if [ -r "$kdir/stat" ]; then
+            local utime stime
+            read -r _ _ _ _ _ _ _ _ _ _ _ _ _ utime stime _ < "$kdir/stat" 2>/dev/null || true
+            kcpu=$(echo "scale=1; ($utime + $stime) / 100.0" | bc 2>/dev/null || echo 0)
+        fi
+
+        # wchan
+        local kwchan=""
+        [ -r "$kdir/wchan" ] && kwchan=$(tr -d '\n' < "$kdir/wchan" 2>/dev/null || echo "")
+
+        # stack (needs root, graceful)
+        local kstack=""
+        if [ -r "$kdir/stack" ]; then
+            kstack=$(tr '\n' '|' < "$kdir/stack" 2>/dev/null | tr -d '\n' || echo "requires_root")
+        else
+            kstack="requires_root"
+        fi
+
+        echo "${ts_ms},${wall},${kpid},${kcomm},${kstate},${kcpu},${krss},${kwchan},${kstack}" \
+            >> "$csv"
+    done
+
+    if [ "$found" -eq 0 ]; then
+        # Sentinel row: kswapd not running
+        echo "${ts_ms},${wall},-,-,-,-,-,-,-" >> "$csv"
+    fi
+}
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 START_MONO=$(awk '{print $1}' /proc/uptime)
@@ -294,6 +372,13 @@ run_one_sample() {
         collect_proc_mem "$pcsv" "$MEM_MODE"
     fi
 
+    # Collect kswapd
+    if [ "$FULL_MODE" = "1" ]; then
+        local kcsv
+        kcsv=$(ensure_kswapd_csv "$CURRENT_SLICE_DIR")
+        collect_kswapd "$kcsv"
+    fi
+
     SAMPLE_COUNT=$((SAMPLE_COUNT + 1))
 }
 
@@ -307,6 +392,14 @@ if [ "$SYS_ONLY" = "1" ] && [ "$MEM_MAX_SAMPLES" -gt 0 ]; then
 fi
 
 if [ "$PROC_ONLY" = "1" ] && [ "$MEM_MAX_SAMPLES" -gt 0 ]; then
+    for _ in $(seq 1 "$MEM_MAX_SAMPLES"); do
+        run_one_sample
+        sleep "$INTERVAL_S"
+    done
+    exit 0
+fi
+
+if [ "$FULL_MODE" = "1" ] && [ "$MEM_MAX_SAMPLES" -gt 0 ]; then
     for _ in $(seq 1 "$MEM_MAX_SAMPLES"); do
         run_one_sample
         sleep "$INTERVAL_S"
