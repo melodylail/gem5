@@ -382,7 +382,50 @@ run_one_sample() {
     SAMPLE_COUNT=$((SAMPLE_COUNT + 1))
 }
 
+# ---------------------------------------------------------------------------
+# PID reuse guard: track /proc/pid/stat field 22 (starttime) per PID
+# ---------------------------------------------------------------------------
+declare -A PID_STARTTIME
+PID_REUSE_CHECK=1
+
+check_pid_reuse() {
+    local pid="$1"
+    if [ "$PID_REUSE_CHECK" != "1" ]; then return 0; fi
+    if [ ! -r "/proc/$pid/stat" ]; then return 1; fi
+    local cur_st
+    cur_st=$(awk '{print $22}' "/proc/$pid/stat" 2>/dev/null || echo "")
+    [ -z "$cur_st" ] && return 0
+    local prev="${PID_STARTTIME[$pid]:-}"
+    if [ -z "$prev" ]; then
+        PID_STARTTIME[$pid]="$cur_st"
+        return 0
+    fi
+    if [ "$cur_st" != "$prev" ]; then
+        return 1
+    fi
+    return 0
+}
+
+# ---------------------------------------------------------------------------
+# Signal handling
+# ---------------------------------------------------------------------------
+SIGNAL_RECEIVED=""
+EXTRA_SAMPLE=0
+
+on_signal() {
+    case "$1" in
+        TERM|INT) SIGNAL_RECEIVED="$1" ;;
+        USR1) EXTRA_SAMPLE=1 ;;
+    esac
+}
+
+trap 'on_signal TERM' SIGTERM
+trap 'on_signal INT' SIGINT
+trap 'on_signal USR1' SIGUSR1 2>/dev/null || true
+
+# ---------------------------------------------------------------------------
 # --sys-only or --proc-only with --max-samples: just collect N samples and exit
+# ---------------------------------------------------------------------------
 if [ "$SYS_ONLY" = "1" ] && [ "$MEM_MAX_SAMPLES" -gt 0 ]; then
     for _ in $(seq 1 "$MEM_MAX_SAMPLES"); do
         run_one_sample
@@ -414,7 +457,19 @@ if [ "$MEM_DURATION_S" -gt 0 ] 2>/dev/null; then
 fi
 
 while true; do
+    # Handle SIGUSR1 extra sample
+    if [ "$EXTRA_SAMPLE" -eq 1 ]; then
+        EXTRA_SAMPLE=0
+        run_one_sample
+    fi
+
     run_one_sample
+
+    # Check SIGTERM/SIGINT
+    if [ -n "$SIGNAL_RECEIVED" ]; then
+        echo "Received $SIGNAL_RECEIVED, exiting gracefully" >&2
+        exit 0
+    fi
 
     if [ "$MEM_MAX_SAMPLES" -gt 0 ] && [ "$SAMPLE_COUNT" -ge "$MEM_MAX_SAMPLES" ]; then
         break
