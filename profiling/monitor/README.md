@@ -98,6 +98,23 @@ for t in profiling/monitor/tests/test_*.sh; do bash "$t"; done
 pip install psutil
 ```
 
+## 分析工具：kswapd 活跃时找 Top 内存进程
+
+```bash
+# 采集数据（先跑 daemon）
+./profiling/monitor/mem_daemon.sh --interval 5 --mode standard
+
+# 分析：找出 kswapd 活跃时 Top 20 内存大户
+python3 profiling/monitor/analyze_kswapd.py \
+    --output-dir ./output --top 20 --window-s 10
+```
+
+检测逻辑（任一触发）：
+1. `sys_mem.csv` 中 `pgscan_kswapd` 增长 → kswapd 实际做了页面回收
+2. `kswapd.csv` 中 `state=R` 或 `state=D` → kswapd 正在运行或阻塞在 I/O
+
+输出：每个 kswapd 活跃事件的时间、MemFree/SwapFree/PSI 上下文、Top N 进程（PID/RSS/USS/cmdline）。
+
 ## 与现有工具的关系
 
 | 工具 | 定位 |
