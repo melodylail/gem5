@@ -177,7 +177,40 @@ Python 额外参数：
 - `--daemonize`：`os.fork` 双 fork 守护进程化
 - 可扩展：后续容易加 HTTP health endpoint、Prometheus exporter
 
-## 12. 测试策略
+## 12. 分析工具：kswapd 活跃时找 Top 内存进程
+
+`profiling/monitor/analyze_kswapd.py` 对 daemon 采集的 CSV 做离线分析，回答"kswapd 活跃时是谁在吃内存"。
+
+### 检测逻辑
+
+| 信号 | 来源 | 含义 |
+|---|---|---|
+| `pgscan_kswapd` 增长 | `sys_mem.csv` | kswapd 实际做了页面回收（最可靠） |
+| `state=R` 或 `state=D` | `kswapd.csv` | kswapd 正在运行或阻塞在 I/O |
+
+### 输入 / 输出
+
+```
+输入：daemon 输出目录（含 sys_mem.csv / proc_mem.csv / kswapd.csv）
+输出：每个 kswapd 活跃事件的：
+  - 时间戳、触发原因
+  - 当时系统内存上下文（MemFree / SwapFree / pgscan / PSI）
+  - Top N 进程（按 RSS 降序，含 PID / RSS / USS / cmdline）
+```
+
+### 命令行
+
+```bash
+python3 analyze_kswapd.py --output-dir ./output --top 20 --window-s 10
+```
+
+### 实现要点
+
+- 进程去重：同一时间窗口内同 PID 取最大 RSS
+- 事件合并：相邻事件间距 ≤ `window_s` 时合并为同一窗口
+- 无 kswapd 活动时：输出 state 分布和 pgscan 首尾差值摘要
+
+## 13. 测试策略
 
 | 级别 | 内容 |
 |---|---|
@@ -187,13 +220,14 @@ Python 额外参数：
 | 对比测试 | 两个 daemon 同时跑，diff `proc_mem.csv` RSS 值 ±5% 以内 |
 | 信号测试 | SIGTERM → 最后一行完整、文件未损坏；SIGUSR1 → 额外采样行 |
 
-## 13. 与现有工具的关系
+## 14. 与现有工具的关系
 
 - **`profiling/mem/mem_sample.sh`**：sidecar 单进程采样 → 本 daemon 是全系统多进程持续采集，互补
 - **`docs/scripts/01_collect_pid.sh`**：交互式单次诊断 → 本 daemon 是自动化长期采集
 - **`docs/scripts/04_memory_pressure.sh`**：手动增量对比 → 本 daemon 的 `sys_mem.csv` 已包含 vmstat 计数器时序列
+- **`analyze_kswapd.py`**：离线分析 daemon 采集的 CSV → 自动关联 kswapd 事件与 top 内存进程
 
-## 14. 后续扩展方向
+## 15. 后续扩展方向
 
 - 对接 `profiling/mem/analyze_mem.py`：读取 sys_mem.csv 做趋势分析和 gate 判定
 - 加告警阈值：peak_rss / swap 增长 / PGSCAN 突增 → 触发 SIGUSR1 快照或通知
