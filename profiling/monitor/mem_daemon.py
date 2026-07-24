@@ -75,7 +75,7 @@ def ensure_csv(slice_dir: str, filename: str, header: list) -> str:
     csv_path = os.path.join(slice_dir, filename)
     if not os.path.exists(csv_path):
         with open(csv_path, "w", newline="") as f:
-            writer = csv.writer(f)
+            writer = csv.writer(f, lineterminator="\n")
             writer.writerow(header)
     return csv_path
 
@@ -170,7 +170,7 @@ def collect_sys_mem(csv_path: str):
     ]
 
     with open(csv_path, "a", newline="") as f:
-        csv.writer(f).writerow(row)
+        csv.writer(f, lineterminator="\n").writerow(row)
 
 
 def collect_proc_mem(csv_path: str, mode: str):
@@ -178,7 +178,7 @@ def collect_proc_mem(csv_path: str, mode: str):
     wall = wall_clock()
 
     with open(csv_path, "a", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
 
         for proc in psutil.process_iter(["pid", "name", "status", "memory_info",
                                           "num_threads", "cpu_times", "cmdline"]):
@@ -244,7 +244,7 @@ def collect_kswapd(csv_path: str):
             return "requires_root"
 
     with open(csv_path, "a", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         for proc in psutil.process_iter(["pid", "name", "status",
                                           "memory_info", "cpu_times"]):
             try:
