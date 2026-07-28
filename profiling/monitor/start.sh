@@ -73,6 +73,15 @@ cmd_analyze() {
         --output-dir "$OUTPUT_DIR" --top "${1:-20}" --window-s "${2:-10}"
 }
 
+cmd_analyze_symphony() {
+    echo "Analyzing symphony process memory trends..."
+    python3 "$SCRIPT_DIR/analyze_symphony_mem.py" \
+        --output-dir "$OUTPUT_DIR" \
+        --pattern "${1:-symphony}" \
+        --csv "${OUTPUT_DIR}/symphony_mem.csv" \
+        --detail
+}
+
 case "${1:-}" in
     start)
         cmd_start "${2:-auto}"
@@ -89,15 +98,19 @@ case "${1:-}" in
     analyze)
         cmd_analyze "${2:-20}" "${3:-10}"
         ;;
+    symphony)
+        cmd_analyze_symphony "${2:-symphony}"
+        ;;
     *)
-        echo "Usage: $0 {start [bash|python] | stop | status | restart | analyze [N] [window_s]}"
+        echo "Usage: $0 {start [bash|python] | stop | status | restart | analyze [N] [window_s] | symphony [pattern]}"
         echo ""
-        echo "  start          Start daemon (default: bash engine)"
-        echo "  start python   Start using Python engine (needs psutil)"
-        echo "  stop           Graceful stop (SIGTERM)"
-        echo "  status         Check if daemon is running"
-        echo "  restart        Stop then start"
-        echo "  analyze [N]    Analyze kswapd → top N memory consumers (default: 20)"
+        echo "  start              Start daemon (default: bash engine)"
+        echo "  start python       Start using Python engine (needs psutil)"
+        echo "  stop               Graceful stop (SIGTERM)"
+        echo "  status             Check if daemon is running"
+        echo "  restart            Stop then start"
+        echo "  analyze [N]        kswapd analysis → top N memory consumers"
+        echo "  symphony [pattern] Symphony process memory trends (default pattern: symphony)"
         echo ""
         echo "Config (edit env.sh):"
         echo "  INTERVAL_S=${INTERVAL_S}   Sample interval (seconds)"
