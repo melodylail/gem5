@@ -211,7 +211,7 @@ def collect_proc_mem(csv_path: str, mode: str):
                         swap_kb = -1
 
                     try:
-                        cmdline = " ".join(proc.cmdline())[:256]
+                        cmdline = " ".join(proc.cmdline())
                     except (psutil.NoSuchProcess, psutil.AccessDenied):
                         cmdline = ""
 

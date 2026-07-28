@@ -239,7 +239,7 @@ collect_proc_mem() {
                 esac
             done < "$proc_dir/smaps_rollup" 2>/dev/null || true
             if [ "$_smaps_ok" = "1" ]; then
-                [ "$mode" != "light" ] && cmdline=$(tr '\0' ' ' < "$proc_dir/cmdline" 2>/dev/null | cut -c1-256 | tr -d '\n' || echo "")
+                [ "$mode" != "light" ] && cmdline=$(tr '\0' ' ' < "$proc_dir/cmdline" 2>/dev/null | tr -d '\n' || echo "")
             fi
         fi
 
